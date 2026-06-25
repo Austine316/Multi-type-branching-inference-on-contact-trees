@@ -180,20 +180,6 @@ Applies the method to early-outbreak (March to May 2020) Karnataka COVID-19 cont
 **`run_covid_mcmc.R`** — the entry point that wires the pipeline together: build the edge table (if absent), load the likelihood, validate the edge table, take a quick MLE for the `R0` starting value, set the Negative-Binomial prior on `k` (`NBINOM_MU`, `NBINOM_PHI`, `K_MAX`, `K_INIT`, `STEP_K`) and the fixed `p_obs ≈ 0.745` (the empirical index-case fraction), then run the sampler. Has fast-test and production parameter blocks.
 
 **Figures.** `covid-mcmc-ro.*` (R0 posterior), `covid-mcmc-joint-posterior.*` (joint R0/k), `covid-mcmc-mu-K-distribution.*` (k posterior), and `covid-mcmc-ACF-ro.*` (autocorrelation diagnostic) are saved manually from the sampler's plots.
-
-### `Paper/` and `Paper/covid-19-data/`
-
-`gupta.pdf` is the source Karnataka study and `pone.0270789.s001.docx` its supplementary material. The `covid-19-data/` subfolder holds the raw and derived inputs:
-
-- `ann2.csv` — the full line list (71,068 records) with confirmation date, parent id, primary/secondary children counts, cluster id, and category (`cat_4`).
-- `contacts.csv` — directed transmission links (`from, to, Reason`).
-- `traced.csv` / `untraced.csv` — the contact-traced and surveillance-detected subsets produced by the analysis script.
-- `54_serial_interval_data.xlsx` and `Delays_3 for histogram.xlsx` — the serial-interval and reporting-delay data used to set the time scale.
-
-**Path note.** The COVID scripts read data with the relative prefix `covid-19-data/...`, whereas in this tree the data sits under `Paper/covid-19-data/`. Run the scripts with a working directory in which `covid-19-data/` resolves to that folder (for example by copying or symlinking it next to the scripts, or adjusting the paths). The header of `covid_data_prep.R` mentions `ann2.csv`, but the code path it actually reads is `untraced.csv` (the analysis-script output derived from `ann2.csv`).
-
-**Session artifacts.** `.RData` (about 60 MB) and `.Rhistory` are RStudio session files rather than part of the pipeline. They can be regenerated and are not needed to reproduce the results; you may wish to exclude them via `.gitignore`.
-
 ---
 
 ## Suggested reproduction order
@@ -201,7 +187,7 @@ Applies the method to early-outbreak (March to May 2020) Karnataka COVID-19 cont
 1. `Tree Simulations/` → generate `full_tree_edges.csv` (full-tree) and the `phylo-epi-sim-data-*.csv` files (one-tip).
 2. `ODE vs Theory/` → confirm the ODEs match the simulation for fixed and random degree.
 3. `MLE/` → `source("mle_results_summary.R")` for the full-tree MLE, intervals, and the `p_obs` sensitivity.
-4. `Bayesian/` → add the missing base file, then `source("run_partial_resolved_tree.R")` for the partial-resolution study.
+4. `Bayesian/` → `source("run_partial_resolved_tree.R")` for the partial-resolution study.
 5. `COVID-19-estimation/` → `covid_data_analysis.R`, then `source("run_covid_mcmc.R")` (which calls `covid_data_prep.R` if needed).
 
 ---
