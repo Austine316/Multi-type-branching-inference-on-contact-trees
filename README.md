@@ -180,6 +180,7 @@ Applies the method to early-outbreak (March to May 2020) Karnataka COVID-19 cont
 **`run_covid_mcmc.R`** — the entry point that wires the pipeline together: build the edge table (if absent), load the likelihood, validate the edge table, take a quick MLE for the `R0` starting value, set the Negative-Binomial prior on `k` (`NBINOM_MU`, `NBINOM_PHI`, `K_MAX`, `K_INIT`, `STEP_K`) and the fixed `p_obs ≈ 0.745` (the empirical index-case fraction), then run the sampler. Has fast-test and production parameter blocks.
 
 **Figures.** `covid-mcmc-ro.*` (R0 posterior), `covid-mcmc-joint-posterior.*` (joint R0/k), `covid-mcmc-mu-K-distribution.*` (k posterior), and `covid-mcmc-ACF-ro.*` (autocorrelation diagnostic) are saved manually from the sampler's plots.
+
 ---
 
 ## Suggested reproduction order
