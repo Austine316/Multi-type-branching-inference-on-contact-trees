@@ -9,7 +9,7 @@ The central object is an augmented state space `(i, k)` in which `i` counts the 
 ## What the repository does
 
 1. **Simulate** epidemics on contact networks and extract the sampled subtree as an edge table (Python, `Tree Simulations/`).
-2. **Validate** the backward ODEs for the extinction probability `E_i(t)` and the tip density `D^i_j(t)` against the simulation, for both fixed and random contact degree (R, `ODE vs Theoy/`).
+2. **Validate** the backward ODEs for the extinction probability `E_i(t)` and the tip density `D^i_j(t)` against the simulation, for both fixed and random contact degree (R, `ODE vs Theory/`).
 3. **Estimate** `R0` and `k` by maximum likelihood on simulated trees, including identifiability and sensitivity analyses (R, `MLE/`).
 4. **Estimate** the same quantities in a Bayesian setting with latent branching times and a partial-resolution study (R, `Bayesian/`).
 5. **Apply** the method to the Karnataka COVID-19 contact-tracing data (R + data, `COVID-19-estimation/`).
@@ -34,7 +34,7 @@ Multi-type-branching-inference-on-contact-trees/
 │   ├── simulation-epi-tree-structure-n-tip.py
 │   └── simulation-epi-tree-structure-one-tip.py
 │
-├── ODE vs Theoy/                        # ODE-vs-simulation validation (R)
+├── ODE vs Theory/                        # ODE-vs-simulation validation (R)
 │   ├── Ei-and-Dij-sim-vs-ode-fixed-degree.R
 │   ├── Ei-and-Dij-sim-vs-ode-random-degree.R
 │   ├── Simulated data/
@@ -107,13 +107,13 @@ The script also contains `verify_edge_table`, a battery of consistency checks (t
 
 Run it from the command line with a distribution name, for example `python simulation-epi-tree-structure-n-tip.py fixed`. The output is `full_tree_edges_<dist>.csv`. The committed `MLE/full_tree_edges.csv` (753 valid replicates at `k=4, β=1.5, μ=σ=0.5`, hence `R0=6`, `p_obs=0.5`) is the fixed-degree product of this script.
 
-**`simulation-epi-tree-structure-one-tip.py`** — an earlier single-observation variant. Rather than emitting a full edge table, it records for each replicate the focal state and time, the single observed state `(j_obs, k_obs)`, and the clade lifespan, distinguishing the three terminal cases: tagged-and-observed, extinct, and never-tagged. It also carries scaffolding for forward, backward, and recursive contact tracing (`tracing` flags) that is not exercised in the main analysis. Its output is `phylo-epi-sim-data-<degree>.csv`, which is exactly the input consumed by the ODE-validation scripts in `ODE vs Theoy/`.
+**`simulation-epi-tree-structure-one-tip.py`** — an earlier single-observation variant. Rather than emitting a full edge table, it records for each replicate the focal state and time, the single observed state `(j_obs, k_obs)`, and the clade lifespan, distinguishing the three terminal cases: tagged-and-observed, extinct, and never-tagged. It also carries scaffolding for forward, backward, and recursive contact tracing (`tracing` flags) that is not exercised in the main analysis. Its output is `phylo-epi-sim-data-<degree>.csv`, which is exactly the input consumed by the ODE-validation scripts in `ODE vs Theory/`.
 
 ---
 
-## `ODE vs Theoy/` — analytic ODEs versus simulation
+## `ODE vs Theory/` — analytic ODEs versus simulation
 
-(The folder name carries a typo for "Theory.") These two scripts confirm that the backward ODE system reproduces the empirical distributions produced by the simulator. Both bin the simulated clade lifespans by time to estimate, empirically, the survival fraction `E_i(t)` and the tip-density `D^i_j(t)`, then overlay the ODE solution computed with `deSolve`.
+These two scripts confirm that the backward ODE system reproduces the empirical distributions produced by the simulator. Both bin the simulated clade lifespans by time to estimate, empirically, the survival fraction `E_i(t)` and the tip-density `D^i_j(t)`, then overlay the ODE solution computed with `deSolve`.
 
 **`Ei-and-Dij-sim-vs-ode-fixed-degree.R`** — the fixed-degree case. It reads `Simulated data/phylo-epi-sim-data-fixed.csv`, conditions on each focal degree `i_foc`, and solves the coupled `E`/`D` system
 
@@ -199,7 +199,7 @@ Applies the method to early-outbreak (March to May 2020) Karnataka COVID-19 cont
 ## Suggested reproduction order
 
 1. `Tree Simulations/` → generate `full_tree_edges.csv` (full-tree) and the `phylo-epi-sim-data-*.csv` files (one-tip).
-2. `ODE vs Theoy/` → confirm the ODEs match the simulation for fixed and random degree.
+2. `ODE vs Theory/` → confirm the ODEs match the simulation for fixed and random degree.
 3. `MLE/` → `source("mle_results_summary.R")` for the full-tree MLE, intervals, and the `p_obs` sensitivity.
 4. `Bayesian/` → add the missing base file, then `source("run_partial_resolved_tree.R")` for the partial-resolution study.
 5. `COVID-19-estimation/` → `covid_data_analysis.R`, then `source("run_covid_mcmc.R")` (which calls `covid_data_prep.R` if needed).
