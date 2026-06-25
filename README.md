@@ -18,7 +18,7 @@ The central object is an augmented state space `(i, k)` in which `i` counts the 
 
 ## Requirements
 
-**Python** (simulation): `numpy`, `pandas`, `tqdm`, `matplotlib` (matplotlib only for the one-tip script). Standard library: `random`, `bisect`, `math`, `os`.
+**Python** (simulation): `numpy`, `pandas`, `tqdm`. Standard library: `random`, `bisect`, `math`, `os`.
 
 **R** (everything else): `deSolve` (ODE integration), `splines`, `readxl` (Excel ingest in the COVID analysis).
 
