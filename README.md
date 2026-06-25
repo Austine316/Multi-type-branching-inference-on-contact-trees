@@ -154,7 +154,7 @@ The root is conditioned on producing at least one observed tip via `log π_{i0} 
 
 ## `Bayesian/` — partial-resolution MCMC
 
-A Bayesian treatment in which internal branching times, their states, and the contact degree `k` are jointly latent. The sampler alternates three Metropolis-Hastings moves: a Gaussian random walk on `log R0`, a uniform proposal for one latent branching time, and a discrete proposal for `k`. States are analytically marginalised over `s ∈ {0,…,k}` at each latent node, so only continuous and integer unknowns are sampled. The backward ODE is solved at most twice per iteration and cached.
+Applies the Bayesian method to simulated data in which internal branching times, their states, and the contact degree `k` are jointly latent. The sampler alternates three Metropolis-Hastings moves: a Gaussian random walk on `log R0`, a uniform proposal for one latent branching time, and a discrete proposal for `k`. States are analytically marginalised over `s ∈ {0,…,k}` at each latent node, so only continuous and integer unknowns are sampled. The backward ODE is solved at most twice per iteration and cached.
 
 Priors: `R0 ~ LogNormal(log 5, 1)`, `k ~ DiscreteUniform{1,…,K_MAX}`, and each latent time uniform on its feasible interval.
 
