@@ -69,7 +69,6 @@ Multi-type-branching-inference-on-contact-trees/
     ├── covid_mcmc_chain.csv             # posterior draws (output)
     ├── covid_mcmc_results.rds           # full MCMC result object (output)
     ├── covid-mcmc-*.{eps,pdf}           (figures)
-    ├── .RData , .Rhistory               # RStudio session artifacts
     ├── covid-19-data/
     │   ├── ann2.csv                     # full line list (71,068 records)
     │   ├── contacts.csv                 # directed transmission links
@@ -193,13 +192,9 @@ The `covid-19-data/` folder (directly under `COVID-19-estimation/`) holds the ra
 
 The `Paper/` folder holds the source material: `gupta.pdf` (the Karnataka study) and `pone.0270789.s001.docx` (its supplementary material).
 
-**Run-order note.** The COVID scripts read data with the relative prefix `covid-19-data/...`, which now resolves correctly with the working directory set to `COVID-19-estimation/`. The header of `covid_data_prep.R` mentions `ann2.csv`, but the path it actually reads is `untraced.csv` (the analysis-script output derived from `ann2.csv`), so `covid_data_analysis.R` must run before `covid_data_prep.R`.
-
-**Session artifacts.** `.RData` (about 60 MB) and `.Rhistory` are RStudio session files rather than part of the pipeline. They can be regenerated and are not needed to reproduce the results; you may wish to exclude them via `.gitignore`.
-
 ---
 
-## Suggested reproduction order
+## Reproduction order
 
 1. `Tree Simulations/` → generate `full_tree_edges.csv` (full-tree) and the `phylo-epi-sim-data-*.csv` files (one-tip).
 2. `ODE vs Theory/` → confirm the ODEs match the simulation for fixed and random degree.
@@ -211,4 +206,4 @@ The `Paper/` folder holds the source material: `gupta.pdf` (the Karnataka study)
 
 ## Data provenance and citation
 
-The COVID-19 data derive from the Karnataka contact-tracing study (`Paper/gupta.pdf` and its supplementary material). Please cite that source for the data and the present manuscript for the inference method. If you intend to make this repository public alongside the manuscript, confirm that the bundled data are redistributable under the source study's terms and that the repository's stated availability matches its actual visibility.
+The COVID-19 data derive from the Karnataka contact-tracing study (`Paper/gupta.pdf` and its supplementary material). Please cite that source for the data and the present manuscript for the inference method.

@@ -77,7 +77,7 @@ cat(sprintf("Feasibility bounds: MIN_INCUB=%.3f  MAX_SI=%.3f  MAX_INFECT=%.3f\n\
 # 1. Load
 # =============================================================================
 cat("Loading data...\n")
-ann <- read.csv("covid-19-data/untraced.csv",      stringsAsFactors = FALSE, fileEncoding = "UTF-8")
+ann <- read.csv("covid-19-data/ann2.csv",      stringsAsFactors = FALSE, fileEncoding = "UTF-8")
 mean(ann$cluster_size)
 table(ann$cluster_size)
 table(ann$children_pri)
