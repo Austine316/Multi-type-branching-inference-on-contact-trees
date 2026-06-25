@@ -161,7 +161,7 @@ Priors: `R0 ~ LogNormal(log 5, 1)`, `k ~ DiscreteUniform{1,…,K_MAX}`, and each
 
 **`run_partial_resolved_tree.R`** — the runner. Exposes a fast-test block and a production block (`N_REPS_USE`, `N_ITER`, `N_BURN`, `THIN`, `P_RES_VALS`, `ODE_DT`, `SEED`) and then sources the sampler. The aggregate result across `p_res` levels is saved to `partial_tree_all_results.rds`, with per-level chains optionally saved alongside.
 
-**Note on a missing dependency.** `partial_resolved_tree.R` begins with `source("parameter_estimate_bayesian_unknown_internals_unknown_k.R")`, which supplies the lower-level routines `build_edges`, `precompute_ED_for_R0`, `ll_from_ED`, `ll_rep_cached`, and `mutate_edge`. That file is not included in this folder, so the Bayesian scripts will not run as committed until it is added. `partial_tree_all_results.rds` lets you reload and replot the saved results without re-running.
+** `partial_resolved_tree.R` executes the base script `source("parameter_estimate_bayesian_unknown_internals_unknown_k.R")`, which supplies the lower-level routines `build_edges`, `precompute_ED_for_R0`, `ll_from_ED`, `ll_rep_cached`, and `mutate_edge`. `partial_tree_all_results.rds` lets you reload and replot the saved results without re-running.
 
 ---
 
