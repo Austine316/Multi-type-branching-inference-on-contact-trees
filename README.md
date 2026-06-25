@@ -208,4 +208,4 @@ Applies the method to early-outbreak (March to May 2020) Karnataka COVID-19 cont
 
 ## Data provenance and citation
 
-The COVID-19 data derive from the Karnataka contact-tracing study (`Paper/gupta.pdf` and its supplementary material). Please cite that source for the data and the present manuscript for the inference method. If you intend to make this repository public alongside the manuscript, confirm that the bundled data are redistributable under the source study's terms and that the repository's stated availability matches its actual visibility.
+The COVID-19 data derive from the Karnataka contact-tracing study (`Paper/gupta.pdf` and its supplementary material). Please cite that source for the data and the present manuscript for the inference method.
