@@ -1,6 +1,6 @@
 # Multi-type Branching Inference on Contact Trees
 
-Code, simulation pipeline, and data for the manuscript **"Multi-type branching inference on contact trees with application to COVID-19."** The framework infers epidemiological parameters from *contact-traced transmission trees* (reported who-infected-whom events), not from pathogen genome sequences. The mathematical machinery is adapted from phylodynamics (BiSSE-style backward Kolmogorov ODEs), but the object being modelled is a contact tree rather than a phylogeny.
+Code, simulation pipeline, and data for the manuscript **"Multi-type branching inference on contact trees with application to COVID-19."** The framework infers epidemiological parameters from *contact-traced transmission trees* (reported who-infected-whom events), not from pathogen genome sequences. The mathematical framework is adapted from phylodynamics (BiSSE-style backward Kolmogorov ODEs), but the object being modelled is a contact tree rather than a phylogeny.
 
 The central object is an augmented state space `(i, k)` in which `i` counts the secondary infections an individual has already produced and `k` is its contact degree. As `i` grows, the remaining transmission potential `(k - i)·β` declines, which is what allows the likelihood to read information out of the branching pattern of the tree. The estimand throughout is the basic reproduction number `R0 = k·β/λ` with `λ = μ + σ` fixed.
 
