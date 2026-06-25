@@ -6,7 +6,7 @@ The central object is an augmented state space `(i, k)` in which `i` counts the 
 
 ---
 
-## What the repository does, in one pass
+## What the repository does
 
 1. **Simulate** epidemics on contact networks and extract the sampled subtree as an edge table (Python, `Tree Simulations/`).
 2. **Validate** the backward ODEs for the extinction probability `E_i(t)` and the tip density `D^i_j(t)` against the simulation, for both fixed and random contact degree (R, `ODE vs Theoy/`).
