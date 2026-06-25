@@ -1,12 +1,12 @@
 # Multi-type Branching Inference on Contact Trees
 
-Code, simulation pipeline, and data for the manuscript **"Multi-type branching inference on contact trees with application to COVID-19."** The framework infers epidemiological parameters from *contact-traced transmission trees* (reported who-infected-whom events), not from pathogen genome sequences. The mathematical framework is adapted from phylodynamics (BiSSE-style backward Kolmogorov ODEs), but the object being modelled is a contact tree rather than a phylogeny.
+Code, simulation pipeline, and data for the manuscript **"Multi-type branching inference on contact trees with application to COVID-19."** The framework infers epidemiological parameters from *contact-traced transmission trees* (reported who-infected-whom events), not from pathogen genome sequences. The mathematical machinery is adapted from phylodynamics (BiSSE-style backward Kolmogorov ODEs), but the object being modelled is a contact tree rather than a phylogeny.
 
 The central object is an augmented state space `(i, k)` in which `i` counts the secondary infections an individual has already produced and `k` is its contact degree. As `i` grows, the remaining transmission potential `(k - i)·β` declines, which is what allows the likelihood to read information out of the branching pattern of the tree. The estimand throughout is the basic reproduction number `R0 = k·β/λ` with `λ = μ + σ` fixed.
 
 ---
 
-## What the repository does
+## What the repository does, in one pass
 
 1. **Simulate** epidemics on contact networks and extract the sampled subtree as an edge table (Python, `Tree Simulations/`).
 2. **Validate** the backward ODEs for the extinction probability `E_i(t)` and the tip density `D^i_j(t)` against the simulation, for both fixed and random contact degree (R, `ODE vs Theory/`).
@@ -18,7 +18,7 @@ The central object is an augmented state space `(i, k)` in which `i` counts the 
 
 ## Requirements
 
-**Python** (simulation): `numpy`, `pandas`, `tqdm`. Standard library: `random`, `bisect`, `math`, `os`.
+**Python** (simulation): `numpy`, `pandas`, `tqdm`, `matplotlib` (matplotlib only for the one-tip script). Standard library: `random`, `bisect`, `math`, `os`.
 
 **R** (everything else): `deSolve` (ODE integration), `splines`, `readxl` (Excel ingest in the COVID analysis).
 
@@ -34,7 +34,7 @@ Multi-type-branching-inference-on-contact-trees/
 │   ├── simulation-epi-tree-structure-n-tip.py
 │   └── simulation-epi-tree-structure-one-tip.py
 │
-├── ODE vs Theory/                        # ODE-vs-simulation validation (R)
+├── ODE vs Theory/                       # ODE-vs-simulation validation (R)
 │   ├── Ei-and-Dij-sim-vs-ode-fixed-degree.R
 │   ├── Ei-and-Dij-sim-vs-ode-random-degree.R
 │   ├── Simulated data/
@@ -52,6 +52,7 @@ Multi-type-branching-inference-on-contact-trees/
 │   └── ro_vs_k.* , pi.* , ro_vs_pobs.*  (figures)
 │
 ├── Bayesian/                            # Bayesian / partial-resolution MCMC (R)
+│   ├── parameter_estimate_bayesian_unknown_internals_unknown_k.R   # likelihood engine
 │   ├── partial_resolved_tree.R
 │   ├── run_partial_resolved_tree.R
 │   ├── partial_tree_all_results.rds
@@ -69,16 +70,16 @@ Multi-type-branching-inference-on-contact-trees/
     ├── covid_mcmc_results.rds           # full MCMC result object (output)
     ├── covid-mcmc-*.{eps,pdf}           (figures)
     ├── .RData , .Rhistory               # RStudio session artifacts
+    ├── covid-19-data/
+    │   ├── ann2.csv                     # full line list (71,068 records)
+    │   ├── contacts.csv                 # directed transmission links
+    │   ├── traced.csv                   # contact-traced subset
+    │   ├── untraced.csv                 # surveillance-detected subset
+    │   ├── 54_serial_interval_data.xlsx
+    │   └── Delays_3 for histogram.xlsx
     └── Paper/
         ├── gupta.pdf                    # source study
-        ├── pone.0270789.s001.docx       # source supplementary material
-        └── covid-19-data/
-            ├── ann2.csv                 # full line list (71,068 records)
-            ├── contacts.csv             # directed transmission links
-            ├── traced.csv               # contact-traced subset
-            ├── untraced.csv             # surveillance-detected subset
-            ├── 54_serial_interval_data.xlsx
-            └── Delays_3 for histogram.xlsx
+        └── pone.0270789.s001.docx       # source supplementary material
 ```
 
 Each figure is provided in both `.eps` (for LaTeX inclusion) and `.pdf` (for preview). Figures are saved manually from the interactive R plots; the scripts draw them on screen rather than writing image files.
@@ -157,11 +158,11 @@ A Bayesian treatment in which internal branching times, their states, and the co
 
 Priors: `R0 ~ LogNormal(log 5, 1)`, `k ~ DiscreteUniform{1,…,K_MAX}`, and each latent time uniform on its feasible interval.
 
-**`partial_resolved_tree.R`** — the sampler and the partial-resolution study. A fraction `p_res` of internal branching times is held fixed at its true value and the remainder is left latent; sweeping `p_res` from 0 (all latent) to 1 (all fixed) quantifies how much knowing the branching times tightens the `R0` posterior. It produces the four MCMC figures: posterior of `R0` (`mcmc_posterior_vs_R0.*`), posterior of `k` (`mcmc_post_vs_k.*`), and the two `p_res` sweeps (`mcmc_ro_vs_pres.*`, `mcmc_k_vs_pres.*`).
+**`parameter_estimate_bayesian_unknown_internals_unknown_k.R`** — the likelihood engine, sourced by the sampler. It is the Bayesian-side counterpart of `MLE/parameter_estimate_mle.R` and holds the shared machinery: the `E`/`D` ODE solver (`solve_ED`), the interpolator precomputation (`precompute_ED`), the equilibrium frequencies (`compute_pi`), the per-replicate log-likelihood (`log_lik_rep`), the aggregate negative log-likelihood (`neg_log_lik`), and the grid-over-`k` estimator and profile plot. Crucially it also exposes the two cached helpers the partial-resolution sampler relies on, `precompute_ED_for_R0` (one ODE solve per `(R0, k)` proposal, returned as an `ED_cache`) and `ll_from_ED` (evaluate a replicate against a cached solution). It documents the same estimand distinction as the COVID likelihood, `R0 = k·β/λ` versus the derived `R̄0 = (β/λ)·S_π(k) < R0`.
 
-**`run_partial_resolved_tree.R`** — the runner. Exposes a fast-test block and a production block (`N_REPS_USE`, `N_ITER`, `N_BURN`, `THIN`, `P_RES_VALS`, `ODE_DT`, `SEED`) and then sources the sampler. The aggregate result across `p_res` levels is saved to `partial_tree_all_results.rds`, with per-level chains optionally saved alongside.
+**`partial_resolved_tree.R`** — the sampler and the partial-resolution study. It sources the engine above and defines the edge-mutation helpers used to move a single latent time, `mutate_edge`, `build_edges`, and `ll_rep_cached`, which reuse the cached `ED` solution so that a time move costs no new ODE solve. A fraction `p_res` of internal branching times is held fixed at its true value and the remainder is left latent; sweeping `p_res` from 0 (all latent) to 1 (all fixed) quantifies how much knowing the branching times tightens the `R0` posterior. It produces the four MCMC figures: posterior of `R0` (`mcmc_posterior_vs_R0.*`), posterior of `k` (`mcmc_post_vs_k.*`), and the two `p_res` sweeps (`mcmc_ro_vs_pres.*`, `mcmc_k_vs_pres.*`).
 
-** `partial_resolved_tree.R` executes the base script `source("parameter_estimate_bayesian_unknown_internals_unknown_k.R")`, which supplies the lower-level routines `build_edges`, `precompute_ED_for_R0`, `ll_from_ED`, `ll_rep_cached`, and `mutate_edge`. `partial_tree_all_results.rds` lets you reload and replot the saved results without re-running.
+**`run_partial_resolved_tree.R`** — the runner. Exposes a fast-test block and a production block (`N_REPS_USE`, `N_ITER`, `N_BURN`, `THIN`, `P_RES_VALS`, `ODE_DT`, `SEED`) and then sources the sampler. The aggregate result across `p_res` levels is saved to `partial_tree_all_results.rds`, with per-level chains optionally saved alongside. `partial_tree_all_results.rds` also lets you reload and replot the saved results without re-running the chains.
 
 ---
 
@@ -181,6 +182,21 @@ Applies the method to early-outbreak (March to May 2020) Karnataka COVID-19 cont
 
 **Figures.** `covid-mcmc-ro.*` (R0 posterior), `covid-mcmc-joint-posterior.*` (joint R0/k), `covid-mcmc-mu-K-distribution.*` (k posterior), and `covid-mcmc-ACF-ro.*` (autocorrelation diagnostic) are saved manually from the sampler's plots.
 
+### `covid-19-data/` and `Paper/`
+
+The `covid-19-data/` folder (directly under `COVID-19-estimation/`) holds the raw and derived inputs:
+
+- `ann2.csv` — the full line list (71,068 records) with confirmation date, parent id, primary/secondary children counts, cluster id, and category (`cat_4`).
+- `contacts.csv` — directed transmission links (`from, to, Reason`).
+- `traced.csv` / `untraced.csv` — the contact-traced and surveillance-detected subsets produced by the analysis script.
+- `54_serial_interval_data.xlsx` and `Delays_3 for histogram.xlsx` — the serial-interval and reporting-delay data used to set the time scale.
+
+The `Paper/` folder holds the source material: `gupta.pdf` (the Karnataka study) and `pone.0270789.s001.docx` (its supplementary material).
+
+**Run-order note.** The COVID scripts read data with the relative prefix `covid-19-data/...`, which now resolves correctly with the working directory set to `COVID-19-estimation/`. The header of `covid_data_prep.R` mentions `ann2.csv`, but the path it actually reads is `untraced.csv` (the analysis-script output derived from `ann2.csv`), so `covid_data_analysis.R` must run before `covid_data_prep.R`.
+
+**Session artifacts.** `.RData` (about 60 MB) and `.Rhistory` are RStudio session files rather than part of the pipeline. They can be regenerated and are not needed to reproduce the results; you may wish to exclude them via `.gitignore`.
+
 ---
 
 ## Suggested reproduction order
@@ -188,11 +204,11 @@ Applies the method to early-outbreak (March to May 2020) Karnataka COVID-19 cont
 1. `Tree Simulations/` → generate `full_tree_edges.csv` (full-tree) and the `phylo-epi-sim-data-*.csv` files (one-tip).
 2. `ODE vs Theory/` → confirm the ODEs match the simulation for fixed and random degree.
 3. `MLE/` → `source("mle_results_summary.R")` for the full-tree MLE, intervals, and the `p_obs` sensitivity.
-4. `Bayesian/` → `source("run_partial_resolved_tree.R")` for the partial-resolution study.
+4. `Bayesian/` → `source("run_partial_resolved_tree.R")` for the partial-resolution study (it sources the likelihood engine automatically).
 5. `COVID-19-estimation/` → `covid_data_analysis.R`, then `source("run_covid_mcmc.R")` (which calls `covid_data_prep.R` if needed).
 
 ---
 
 ## Data provenance and citation
 
-The COVID-19 data derive from the Karnataka contact-tracing study (`Paper/gupta.pdf` and its supplementary material). Please cite that source for the data and the present manuscript for the inference method.
+The COVID-19 data derive from the Karnataka contact-tracing study (`Paper/gupta.pdf` and its supplementary material). Please cite that source for the data and the present manuscript for the inference method. If you intend to make this repository public alongside the manuscript, confirm that the bundled data are redistributable under the source study's terms and that the repository's stated availability matches its actual visibility.
