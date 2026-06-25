@@ -1,24 +1,24 @@
 # Multi-type Branching Inference on Contact Trees
 
-Code, simulation pipeline, and data for the manuscript **"Multi-type branching inference on contact trees with application to COVID-19."** The framework infers epidemiological parameters from *contact-traced transmission trees* (reported who-infected-whom events), not from pathogen genome sequences. The mathematical machinery is adapted from phylodynamics (BiSSE-style backward Kolmogorov ODEs), but the object being modelled is a contact tree rather than a phylogeny.
+Code, simulation pipeline, and data for the manuscript **"Multi-type branching inference on contact trees with application to COVID-19."** The framework infers epidemiological parameters from *contact-traced transmission trees* (reported who-infected-whom events), not from pathogen genome sequences. The mathematical ingredient is adapted from phylodynamics (BiSSE-style backward Kolmogorov ODEs), but the object being modelled is a contact tree rather than a phylogeny.
 
 The central object is an augmented state space `(i, k)` in which `i` counts the secondary infections an individual has already produced and `k` is its contact degree. As `i` grows, the remaining transmission potential `(k - i)·β` declines, which is what allows the likelihood to read information out of the branching pattern of the tree. The estimand throughout is the basic reproduction number `R0 = k·β/λ` with `λ = μ + σ` fixed.
 
 ---
 
-## What the repository does, in one pass
+## What the repository does
 
 1. **Simulate** epidemics on contact networks and extract the sampled subtree as an edge table (Python, `Tree Simulations/`).
 2. **Validate** the backward ODEs for the extinction probability `E_i(t)` and the tip density `D^i_j(t)` against the simulation, for both fixed and random contact degree (R, `ODE vs Theory/`).
 3. **Estimate** `R0` and `k` by maximum likelihood on simulated trees, including identifiability and sensitivity analyses (R, `MLE/`).
-4. **Estimate** the same quantities in a Bayesian setting with latent branching times and a partial-resolution study (R, `Bayesian/`).
+4. **Estimate** the same quantities (simulated trees) in a Bayesian setting with latent branching times and a partial-resolution study (R, `Bayesian/`).
 5. **Apply** the method to the Karnataka COVID-19 contact-tracing data (R + data, `COVID-19-estimation/`).
 
 ---
 
 ## Requirements
 
-**Python** (simulation): `numpy`, `pandas`, `tqdm`, `matplotlib` (matplotlib only for the one-tip script). Standard library: `random`, `bisect`, `math`, `os`.
+**Python** (simulation): `numpy`, `pandas`, `tqdm`. Standard library: `random`, `bisect`, `math`, `os`.
 
 **R** (everything else): `deSolve` (ODE integration), `splines`, `readxl` (Excel ingest in the COVID analysis).
 
@@ -52,7 +52,7 @@ Multi-type-branching-inference-on-contact-trees/
 │   └── ro_vs_k.* , pi.* , ro_vs_pobs.*  (figures)
 │
 ├── Bayesian/                            # Bayesian / partial-resolution MCMC (R)
-│   ├── parameter_estimate_bayesian_unknown_internals_unknown_k.R   # likelihood engine
+│   ├── parameter_estimate_bayesian_unknown_internals_unknown_k.R
 │   ├── partial_resolved_tree.R
 │   ├── run_partial_resolved_tree.R
 │   ├── partial_tree_all_results.rds
@@ -126,7 +126,7 @@ with `D^{j}_{j}(0) = σ` and `E_i(0)=1`. The helper functions `Ei()`, `Dij()`, a
 
 **`Ei-and-Dij-sim-vs-ode-random-degree.R`** — the random-degree (Poisson-mixed) case. It decouples the focal/latent degree `focal_k` from the Poisson mixing mean `lambda`, reads `Simulated data/phylo-epi-sim-data-Poisson.csv`, builds the newborn mixing weights `w_k = dpois(0:Kmax, lambda)` truncated at `Kmax`, and solves the corresponding mixed system. These produce the `Di0_random.*` through `Di4_random.*` figures.
 
-The two simulated-data CSVs (`phylo-epi-sim-data-fixed.csv`, `phylo-epi-sim-data-Poisson.csv`, roughly 13 MB each) share the schema `i_foc, k_foc, t_foc, j_obs, k_obs, t_obs` and are the output of the one-tip simulator.
+The two simulated-data CSVs (`phylo-epi-sim-data-fixed.csv`, `phylo-epi-sim-data-Poisson.csv`, share the schema `i_foc, k_foc, t_foc, j_obs, k_obs, t_obs` and are the output of the one-tip simulator.
 
 ---
 
@@ -169,7 +169,7 @@ Priors: `R0 ~ LogNormal(log 5, 1)`, `k ~ DiscreteUniform{1,…,K_MAX}`, and each
 
 Applies the method to early-outbreak (March to May 2020) Karnataka COVID-19 contact-tracing data. State `i` is the number of secondary transmissions an individual had made by detection; `j_obs = children_pri` is that individual's state at confirmation. Index cases (`parentid = 0`) are surveillance-detected and enter the `σ` tip-density term; contact-traced cases (`parentid > 0`) are not `σ`-detections and contribute extinction terms, with their confirmation time providing a feasibility bound on their parent's transmission time. Infection (birth) times are latent and proposed by the MCMC. Calendar time is rescaled by the mean serial interval (about 5.65 to 5.88 days per model unit, taken from the serial-interval data).
 
-**`covid_data_analysis.R`** — reproduces the Section 4 descriptive numbers and the month filter from the raw line list and contact links, splits the data into traced and untraced subsets, and writes `covid-19-data/untraced.csv`. It also ingests the serial-interval and delay spreadsheets. Run this first, since it produces the `untraced.csv` consumed downstream.
+**`covid_data_analysis.R`** — reproduces the Section 5 descriptive numbers and the month filter from the raw line list and contact links, splits the data into traced and untraced subsets, and writes `covid-19-data/untraced.csv`. It also ingests the serial-interval and delay spreadsheets. Run this first, since it produces the `untraced.csv` consumed downstream.
 
 **`covid_data_prep.R`** — builds the model edge table `covid_edges.csv` from `untraced.csv` and `contacts.csv`. It maps each individual to its observed state and detection time, sets the latent birth-time bounds, and emits the schema `rep_id, ind_id, par_id, is_tip, s, c, j_obs, tau_a, tau_b, delta, seg_idx, n_segs, branch_rate, n_tips, root_state, lo_born, hi_born`.
 
